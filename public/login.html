@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Aplikasi Klinik Enterprise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --accent-from: #0EA5E9;
+            --accent-to: #6366F1;
+        }
+        .gradient-bg { background: linear-gradient(135deg, var(--accent-from), var(--accent-to)); }
+        .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body class="bg-gray-950 text-white min-h-screen flex items-center justify-center p-6">
+    <div class="w-full max-w-md glass p-8 rounded-2xl shadow-2xl">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-indigo-400">Klinik Enterprise</h1>
+            <p class="text-gray-400 mt-2">Masuk ke sistem manajemen klinik</p>
+        </div>
+        <form id="loginForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium mb-2">Email</label>
+                <input type="email" id="email" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2">Password</label>
+                <input type="password" id="password" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            </div>
+            <button type="submit" class="w-full gradient-bg py-3 rounded-lg font-bold hover:opacity-90 transition shadow-lg">Masuk</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                if (res.ok) window.location.href = '/dashboard.html';
+                else alert('Login gagal');
+            } catch (err) {
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>
