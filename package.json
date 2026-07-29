@@ -1,7 +1,7 @@
 {
   "name": "klinik-enterprise",
   "version": "1.0.0",
-  "description": "Aplikasi Klinik Enterprise - Klinik Enterprise Enterprise Platform",
+  "description": "Aplikasi Klinik Enterprise - Enterprise Clinic Management Platform",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
@@ -20,6 +20,7 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "eslint": "^8.50.0"
   }
 }
