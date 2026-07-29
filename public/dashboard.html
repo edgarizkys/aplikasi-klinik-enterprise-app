@@ -6,60 +6,61 @@
     <title>Dashboard - Aplikasi Klinik Enterprise</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --accent: #0EA5E9; }
-        .sidebar { background: #111827; }
-        .active-link { border-left: 4px solid var(--accent); background: rgba(14, 165, 233, 0.1); }
+        :root { --accent-from: #0EA5E9; --accent-to: #6366F1; }
+        .sidebar { background: linear-gradient(to bottom, var(--accent-from), var(--accent-to)); }
     </style>
 </head>
-<body class="bg-gray-50 flex h-screen">
+<body class="bg-gray-100 flex min-h-screen">
     <aside class="w-64 sidebar text-white p-6">
-        <h1 class="text-xl font-bold mb-10 text-sky-400">Klinik Enterprise</h1>
+        <h2 class="text-2xl font-bold mb-10">Klinik Enterprise</h2>
         <nav class="space-y-4">
-            <a href="#" class="block py-2 px-4 active-link">Dashboard</a>
-            <a href="#" class="block py-2 px-4 hover:bg-gray-800">Pasien</a>
-            <a href="#" class="block py-2 px-4 hover:bg-gray-800">Janji Temu</a>
-            <a href="#" class="block py-2 px-4 hover:bg-gray-800">Dokter</a>
-            <a href="#" class="block py-2 px-4 hover:bg-gray-800">Laporan</a>
+            <a href="#" class="block py-2 px-4 bg-white/20 rounded">Dashboard</a>
+            <a href="#" class="block py-2 px-4 hover:bg-white/10 rounded">Pasien</a>
+            <a href="#" class="block py-2 px-4 hover:bg-white/10 rounded">Janji Temu</a>
+            <a href="#" class="block py-2 px-4 hover:bg-white/10 rounded">Resep</a>
         </nav>
     </aside>
 
-    <main class="flex-1 p-8 overflow-y-auto">
+    <main class="flex-1 p-8">
         <header class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-bold text-gray-800">Ringkasan Klinik</h2>
-            <button class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600">+ Janji Baru</button>
+            <h1 class="text-3xl font-bold text-gray-800">Rekam Medis</h1>
+            <button class="bg-blue-600 text-white px-4 py-2 rounded shadow">Tambah Data</button>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-gray-500">Total Pasien</p>
-                <h3 class="text-3xl font-bold">1,284</h3>
+        <div class="grid grid-cols-1 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="pb-4">Nama Pasien</th>
+                            <th class="pb-4">No Rekam Medis</th>
+                            <th class="pb-4">Status</th>
+                            <th class="pb-4">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table">
+                        <!-- Data injected via app.js -->
+                    </tbody>
+                </table>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-gray-500">Janji Hari Ini</p>
-                <h3 class="text-3xl font-bold">24</h3>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-gray-500">Pendapatan</p>
-                <h3 class="text-3xl font-bold">Rp 12.5jt</h3>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 class="font-bold text-lg mb-4">Antrian Aktif</h3>
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="text-gray-400 border-b">
-                        <th class="pb-3">Pasien</th>
-                        <th class="pb-3">Dokter</th>
-                        <th class="pb-3">Jadwal</th>
-                        <th class="pb-3">Status</th>
-                    </tr>
-                </thead>
-                <tbody id="appointment-list">
-                    <!-- Data injected via app.js -->
-                </tbody>
-            </table>
         </div>
     </main>
+
+    <script>
+        async function fetchData() {
+            const res = await fetch('/api/patients');
+            const data = await res.json();
+            const tbody = document.getElementById('data-table');
+            tbody.innerHTML = data.map(p => `
+                <tr class="border-b last:border-0">
+                    <td class="py-4">${p.name}</td>
+                    <td class="py-4">${p.medical_record_id}</td>
+                    <td class="py-4"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-sm">Aktif</span></td>
+                    <td class="py-4 text-blue-600 cursor-pointer">Detail</td>
+                </tr>
+            `).join('');
+        }
+        fetchData();
+    </script>
 </body>
 </html>
