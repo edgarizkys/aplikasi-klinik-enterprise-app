@@ -4,86 +4,59 @@
 
 @layer base {
   :root {
-    --color-primary: #0EA5E9;
-    --color-secondary: #6366F1;
-    --color-bg-main: #F8FAFC;
-    --color-text-main: #1E293B;
+    --primary: #2563EB;
+    --secondary: #10B981;
+    --bg: #F8FAFC;
+    --text: #1E293B;
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply bg-slate-50 text-slate-900 font-sans antialiased;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 
-           bg-gradient-to-r from-[#0EA5E9] to-[#6366F1] text-white 
-           hover:opacity-90 active:scale-95 shadow-sm;
+    @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm;
   }
 
-  .btn-secondary {
-    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 
-           bg-white border border-slate-200 text-slate-600 
-           hover:bg-slate-50 active:scale-95;
+  .btn-success {
+    @apply px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors shadow-sm;
   }
 
-  .card-enterprise {
-    @apply bg-white border border-slate-200 rounded-xl shadow-sm 
-           hover:shadow-md transition-shadow duration-300;
+  .card {
+    @apply bg-white p-6 rounded-xl border border-slate-200 shadow-sm;
   }
 
   .input-field {
-    @apply w-full px-3 py-2 bg-white border border-slate-300 rounded-lg 
-           focus:ring-2 focus:ring-[#0EA5E9] focus:border-transparent 
-           outline-none transition-all text-sm;
+    @apply w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all;
   }
 
-  .table-enterprise {
-    @apply w-full text-left border-collapse;
+  .table-container {
+    @apply overflow-x-auto rounded-lg border border-slate-200;
   }
 
-  .table-enterprise th {
-    @apply px-4 py-3 bg-slate-50 text-slate-500 font-semibold text-xs uppercase tracking-wider border-b border-slate-200;
+  .table-header {
+    @apply bg-slate-100 text-slate-700 font-semibold text-left px-4 py-3;
   }
 
-  .table-enterprise td {
-    @apply px-4 py-3 text-sm border-b border-slate-100 text-slate-600;
-  }
-
-  .badge {
-    @apply px-2 py-1 rounded-full text-xs font-medium;
-  }
-
-  .badge-success {
-    @apply bg-emerald-100 text-emerald-700;
-  }
-
-  .badge-warning {
-    @apply bg-amber-100 text-amber-700;
-  }
-
-  .badge-danger {
-    @apply bg-rose-100 text-rose-700;
-  }
-
-  .sidebar-link {
-    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 
-           hover:bg-slate-100 hover:text-[#0EA5E9] transition-colors font-medium;
-  }
-
-  .sidebar-link-active {
-    @apply flex items-center gap-3 px-3 py-2 rounded-lg bg-[#0EA5E9]/10 text-[#0EA5E9] font-semibold;
+  .table-cell {
+    @apply px-4 py-3 border-b border-slate-100;
   }
 }
 
-@layer utilities {
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#0EA5E9] to-[#6366F1];
-  }
-  
-  .bg-gradient-enterprise {
-    @apply bg-gradient-to-r from-[#0EA5E9] to-[#6366F1];
-  }
+.sidebar-active {
+  @apply border-l-4 border-emerald-500 bg-emerald-50 text-emerald-700;
+}
+
+.status-badge {
+  @apply px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.status-lunas {
+  @apply bg-emerald-100 text-emerald-800;
+}
+
+.status-pending {
+  @apply bg-amber-100 text-amber-800;
 }
