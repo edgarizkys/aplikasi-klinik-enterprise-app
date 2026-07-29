@@ -1,31 +1,29 @@
 # Aplikasi Klinik Enterprise
 
-Sistem manajemen klinik terpadu. Fitur: CRUD pasien, jadwal dokter, rekam medis, pembayaran, laporan keuangan, antrian online.
+Sistem manajemen klinik terintegrasi. Fitur: CRUD Pasien, Jadwal Dokter, Rekam Medis, Pembayaran, Laporan Keuangan, Antrian Online.
 
 ## Tech Stack
 - Backend: Node.js, Express.js
-- Database: Turso (SQLite)
-- Frontend: React, Tailwind CSS (#14B8A6 → #0EA5E9)
-- ORM: Drizzle
+- Database: Turso SQLite (LibSQL)
+- Frontend: React, Tailwind CSS
+- Styling: #14B8A6 (Teal) to #0EA5E9 (Sky)
 
-## Setup
+## Struktur Entitas
+1. **Pasien**: Data demografi, BPJS.
+2. **Dokter**: Spesialisasi, jadwal praktik.
+3. **Janji**: Antrian, status, catatan medis.
+
+## Instalasi
 1. `npm install`
-2. `.env` setup: `TURSO_DB_URL`, `TURSO_AUTH_TOKEN`
-3. `npm run db:push`
+2. Konfigurasi `TURSO_DB_URL` & `TURSO_AUTH_TOKEN` di `.env`.
+3. `npm run migrate`
 4. `npm run dev`
 
-## Struktur Data
-- `patients`: name, phone, birth_date, address, bpjs_number
-- `appointments`: patient_name, doctor_name, schedule, status, notes
-- `doctors`: name, speciality, schedule
+## API Endpoints
+- `GET /api/patients` - List pasien
+- `POST /api/appointments` - Buat janji
+- `GET /api/doctors` - Jadwal dokter
+- `GET /api/reports` - Laporan keuangan
 
-## Fitur Utama
-- **Manajemen Pasien**: Registrasi & riwayat medis.
-- **Jadwal Dokter**: Pengaturan shift & spesialisasi.
-- **Antrian**: Real-time tracking status janji.
-- **Keuangan**: Laporan transaksi BPJS/Umum.
-
-## Deployment
-- Backend: Fly.io / Render
-- Database: Turso
-- Frontend: Vercel
+## Lisensi
+MIT.
