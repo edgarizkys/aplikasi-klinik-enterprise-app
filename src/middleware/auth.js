@@ -2,23 +2,29 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = function(req, res, next) {
-    const token = req.headers['authorization'];
-    
-    if (!token) {
-        return res.status(401).json({ error: 'Token diperlukan' });
+    const authHeader = req.headers['authorization'];
+    const tenantId = req.headers['x-tenant-id'];
+
+    if (!tenantId) {
+        return res.status(400).json({ error: 'Tenant ID wajib' });
+    }
+
+    if (!authHeader) {
+        req.user = { id: 'guest', role: 'public', tenantId };
+        return next();
     }
 
     try {
-        const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.JWT_SECRET || 'klinik_enterprise_secret_2024');
-        req.user = decoded;
+        const token = authHeader.replace('Bearer ', '');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'klinik-secret-key');
         
-        // Multi-tenant check
-        if (req.headers['x-clinic-id'] && req.user.clinic_id !== req.headers['x-clinic-id']) {
-            return res.status(403).json({ error: 'Akses klinik tidak diizinkan' });
+        if (decoded.tenantId !== tenantId) {
+            return res.status(403).json({ error: 'Akses tenant ditolak' });
         }
-        
+
+        req.user = decoded;
         next();
-    } catch(e) {
+    } catch (err) {
         res.status(401).json({ error: 'Token tidak valid' });
     }
 };
