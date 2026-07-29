@@ -1,35 +1,25 @@
-# README.md
-
 # Aplikasi Klinik Enterprise
 
-Sistem manajemen klinik terintegrasi. Fitur: Rekam Medis, Jadwal Dokter, Resep, Laporan.
+🏥 Klinik & Kesehatan - World-Class Enterprise v5.0
 
-## Stack
-- Backend: Express.js
-- Database: Turso SQLite
-- Frontend: Tailwind CSS
-- Styling: #0EA5E9 to #6366F1 gradient
+## Pages
+- **/** - Landing Page (Marketing, Hero, Features, Pricing, Testimonials)
+- **/login** - Login & Register Page
+- **/dashboard** - Main Dashboard (CRUD, Analytics, Charts)
 
-## Struktur Data
-1. **Pasien**: Data demografi & rekam medis.
-2. **Janji Temu**: Penjadwalan & status kunjungan.
-3. **Resep**: Manajemen obat & dosis.
+## Features & Architecture
+- **Landing Page**: Scroll animations, typing effects, parallax, glassmorphism
+- **Payment Gateway**: Midtrans & Xendit QRIS / VA + Webhook Verification
+- **Security**: Express Rate Limiter (100 req/min) & Helmet Security
+- **Analytics**: Chart.js Interactive Graph Visualization
+- **Export**: Export CSV/Excel & Print PDF Report
+- **Multi-Tenant**: Multi-Tenant & Multi-Branch Ready Schema
+- **Database**: Turso Cloud SQLite Database
 
-## Instalasi
-1. `npm install`
-2. Set `TURSO_DB_URL` & `TURSO_AUTH_TOKEN` di `.env`.
-3. `npm run migrate`
-4. `npm start`
+## Entities
+- **Pasien**: Nama, Telepon, Tanggal Lahir, Alamat, No BPJS
+- **Janji**: Nama Pasien, Dokter, Jadwal, Status, Catatan
+- **Dokter**: Nama, Spesialis, Jadwal
 
-## API Endpoints
-- `GET /api/patients` - List pasien
-- `POST /api/appointments` - Buat janji temu
-- `GET /api/prescriptions` - Lihat resep
-
-## Fitur Utama
-- **Rekam Medis Elektronik**: Akses riwayat pasien cepat.
-- **Manajemen Resep**: Digitalisasi pemberian obat.
-- **Laporan Kunjungan**: Analitik performa klinik.
-
-## Lisensi
-Proprietary - Klinik Enterprise.
+---
+*Built by E.D.G.A.R Senior Principal Engineer Agent - EdgarTech Corp*
