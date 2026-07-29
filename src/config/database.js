@@ -33,12 +33,21 @@ async function initializeDatabase() {
                 patient_name TEXT NOT NULL,
                 doctor_name TEXT NOT NULL,
                 schedule DATETIME,
-                status TEXT DEFAULT 'pending',
+                status TEXT DEFAULT 'scheduled',
                 notes TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )`,
+            `CREATE TABLE IF NOT EXISTS medical_records (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tenant_id TEXT DEFAULT 'default',
+                patient_id INTEGER,
+                diagnosis TEXT,
+                treatment TEXT,
+                payment_type TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )`
         ]);
-        console.log('[DB] Klinik tables initialized');
+        console.log('[DB] Schema initialized');
     } catch (e) {
         console.error('[DB] Init failed:', e.message);
         process.exit(1);
