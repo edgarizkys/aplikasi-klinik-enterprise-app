@@ -3,15 +3,15 @@ const crypto = require('crypto');
 
 class PaymentGatewayService {
     constructor() {
-        this.serverKey = process.env.PAYMENT_GATEWAY_KEY || 'sk_live_klinik_enterprise';
+        this.serverKey = process.env.PAYMENT_GATEWAY_KEY || 'sk_prod_klinik_enterprise';
         this.merchantId = process.env.PAYMENT_MERCHANT_ID || 'M-KLINIK-001';
     }
 
     async createQrisTransaction(orderId, amount, patientData = {}) {
-        const referenceNo = `QRIS-${orderId}-${Date.now()}`;
+        const referenceNo = `QRIS-KLINIK-${orderId}-${Date.now()}`;
         return {
             success: true,
-            provider: 'Midtrans / Xendit',
+            provider: 'Midtrans/Xendit',
             referenceNo,
             orderId,
             amount,
@@ -36,13 +36,12 @@ class PaymentGatewayService {
         };
     }
 
-    async processBpjsClaim(appointmentId, bpjsNumber) {
-        if (!bpjsNumber) throw new Error('Nomor BPJS wajib diisi');
+    async processBpjsClaim(patientId, claimData) {
+        if (!patientId || !claimData.bpjs_number) throw new Error('Data BPJS tidak valid');
         return {
-            success: true,
-            status: 'PENDING_VERIFICATION',
-            claimId: `BPJS-${appointmentId}-${Date.now()}`,
-            message: 'Klaim BPJS diajukan ke sistem verifikasi pusat.'
+            status: 'pending_verification',
+            claimId: `BPJS-${Date.now()}`,
+            message: 'Klaim BPJS sedang diverifikasi oleh sistem pusat.'
         };
     }
 
