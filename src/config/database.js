@@ -8,49 +8,43 @@ const tursoClient = createClient({
 
 async function initializeDatabase() {
     try {
-        await tursoClient.batch([
-            `CREATE TABLE IF NOT EXISTS patients (
+        await tursoClient.execute(`
+            CREATE TABLE IF NOT EXISTS patients (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 tenant_id TEXT DEFAULT 'default',
                 name TEXT NOT NULL,
-                phone TEXT,
-                birth_date TEXT,
-                address TEXT,
-                bpjs_number TEXT,
+                dob TEXT,
+                medical_record_id TEXT UNIQUE,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )`,
-            `CREATE TABLE IF NOT EXISTS doctors (
+            )
+        `);
+
+        await tursoClient.execute(`
+            CREATE TABLE IF NOT EXISTS appointments (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 tenant_id TEXT DEFAULT 'default',
-                name TEXT NOT NULL,
-                speciality TEXT,
-                schedule TEXT,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )`,
-            `CREATE TABLE IF NOT EXISTS appointments (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                tenant_id TEXT DEFAULT 'default',
-                patient_name TEXT NOT NULL,
-                doctor_name TEXT NOT NULL,
-                schedule DATETIME,
+                patient_id TEXT NOT NULL,
+                doctor TEXT NOT NULL,
+                date DATETIME,
                 status TEXT DEFAULT 'scheduled',
-                notes TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )`,
-            `CREATE TABLE IF NOT EXISTS medical_records (
+            )
+        `);
+
+        await tursoClient.execute(`
+            CREATE TABLE IF NOT EXISTS prescriptions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 tenant_id TEXT DEFAULT 'default',
-                patient_id INTEGER,
-                diagnosis TEXT,
-                treatment TEXT,
-                payment_type TEXT,
+                appointment_id INTEGER NOT NULL,
+                medication TEXT NOT NULL,
+                dosage TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )`
-        ]);
-        console.log('[DB] Schema initialized');
-    } catch (e) {
-        console.error('[DB] Init failed:', e.message);
-        process.exit(1);
+            )
+        `);
+        
+        console.log('[DB] Klinik Enterprise tables ready');
+    } catch(e) {
+        console.error('[DB] Init error:', e.message);
     }
 }
 
