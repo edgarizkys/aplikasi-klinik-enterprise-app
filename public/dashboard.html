@@ -6,64 +6,60 @@
     <title>Dashboard - Aplikasi Klinik Enterprise</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --accent-from: #14B8A6; --accent-to: #0EA5E9; }
-        .gradient-nav { background: linear-gradient(to right, var(--accent-from), var(--accent-to)); }
+        :root { --accent: #0EA5E9; }
+        .sidebar { background: #111827; }
+        .active-link { border-left: 4px solid var(--accent); background: rgba(14, 165, 233, 0.1); }
     </style>
 </head>
-<body class="bg-gray-100">
-    <nav class="gradient-nav text-white p-4 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="font-bold text-xl">Klinik Enterprise</h1>
-            <div class="space-x-4">
-                <button onclick="render('patients')" class="hover:underline">Pasien</button>
-                <button onclick="render('appointments')" class="hover:underline">Janji</button>
-                <button onclick="render('doctors')" class="hover:underline">Dokter</button>
+<body class="bg-gray-50 flex h-screen">
+    <aside class="w-64 sidebar text-white p-6">
+        <h1 class="text-xl font-bold mb-10 text-sky-400">Klinik Enterprise</h1>
+        <nav class="space-y-4">
+            <a href="#" class="block py-2 px-4 active-link">Dashboard</a>
+            <a href="#" class="block py-2 px-4 hover:bg-gray-800">Pasien</a>
+            <a href="#" class="block py-2 px-4 hover:bg-gray-800">Janji Temu</a>
+            <a href="#" class="block py-2 px-4 hover:bg-gray-800">Dokter</a>
+            <a href="#" class="block py-2 px-4 hover:bg-gray-800">Laporan</a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto">
+        <header class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-bold text-gray-800">Ringkasan Klinik</h2>
+            <button class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600">+ Janji Baru</button>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-gray-500">Total Pasien</p>
+                <h3 class="text-3xl font-bold">1,284</h3>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-gray-500">Janji Hari Ini</p>
+                <h3 class="text-3xl font-bold">24</h3>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-gray-500">Pendapatan</p>
+                <h3 class="text-3xl font-bold">Rp 12.5jt</h3>
             </div>
         </div>
-    </nav>
 
-    <main class="container mx-auto p-6">
-        <div id="app-content" class="bg-white p-6 rounded-xl shadow-sm">
-            <h2 id="view-title" class="text-2xl font-bold mb-4">Dashboard</h2>
-            <div id="data-table" class="overflow-x-auto">
-                <!-- Dynamic Content -->
-            </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="font-bold text-lg mb-4">Antrian Aktif</h3>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-gray-400 border-b">
+                        <th class="pb-3">Pasien</th>
+                        <th class="pb-3">Dokter</th>
+                        <th class="pb-3">Jadwal</th>
+                        <th class="pb-3">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="appointment-list">
+                    <!-- Data injected via app.js -->
+                </tbody>
+            </table>
         </div>
     </main>
-
-    <script>
-        const state = {
-            patients: [],
-            appointments: [],
-            doctors: []
-        };
-
-        async function fetchData(entity) {
-            const res = await fetch(`/api/${entity}`);
-            state[entity] = await res.json();
-            render(entity);
-        }
-
-        function render(entity) {
-            document.getElementById('view-title').innerText = entity.toUpperCase();
-            const container = document.getElementById('data-table');
-            const data = state[entity];
-            
-            let html = `<table class="w-full text-left"><thead><tr class="border-b">`;
-            if(data.length > 0) {
-                Object.keys(data[0]).forEach(key => html += `<th class="p-2">${key}</th>`);
-                html += `</tr></thead><tbody>`;
-                data.forEach(row => {
-                    html += `<tr class="border-b">`;
-                    Object.values(row).forEach(val => html += `<td class="p-2">${val}</td>`);
-                    html += `</tr>`;
-                });
-            }
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-        }
-
-        fetchData('patients');
-    </script>
 </body>
 </html>
