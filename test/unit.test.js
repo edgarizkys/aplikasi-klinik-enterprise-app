@@ -1,6 +1,5 @@
-// unit.test.js
 const request = require('supertest');
-const app = require('./app');
+const app = require('../app');
 
 describe('Klinik Enterprise API Tests', () => {
   
@@ -14,27 +13,27 @@ describe('Klinik Enterprise API Tests', () => {
   });
 
   describe('POST /api/appointments', () => {
-    it('create appointment with valid data', async () => {
-      const newAppt = {
+    it('create new appointment', async () => {
+      const payload = {
         patient_name: 'Budi Santoso',
         doctor_name: 'Dr. Andi',
         schedule: '2026-08-01T10:00:00Z',
         status: 'pending',
         notes: 'Konsultasi rutin'
       };
-      const res = await request(app).post('/api/appointments').send(newAppt);
+      const res = await request(app).post('/api/appointments').send(payload);
       expect(res.statusCode).toBe(201);
-      expect(res.body.patient_name).toBe(newAppt.patient_name);
+      expect(res.body.patient_name).toBe(payload.patient_name);
     });
 
-    it('reject appointment without required fields', async () => {
-      const res = await request(app).post('/api/appointments').send({});
+    it('reject invalid schedule format', async () => {
+      const res = await request(app).post('/api/appointments').send({ patient_name: 'Test' });
       expect(res.statusCode).toBe(400);
     });
   });
 
   describe('GET /api/doctors', () => {
-    it('return list of doctors', async () => {
+    it('return doctor list', async () => {
       const res = await request(app).get('/api/doctors');
       expect(res.statusCode).toBe(200);
       expect(res.body).toBeDefined();
@@ -42,8 +41,8 @@ describe('Klinik Enterprise API Tests', () => {
   });
 
   describe('Error Handling', () => {
-    it('return 404 for non-existent route', async () => {
-      const res = await request(app).get('/api/invalid-route');
+    it('handle non-existent route', async () => {
+      const res = await request(app).get('/api/invalid-endpoint');
       expect(res.statusCode).toBe(404);
     });
   });
