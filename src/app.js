@@ -3,66 +3,55 @@ const { createClient } = require('@libsql/client');
 const cors = require('cors');
 
 const app = express();
+app.use(express.json());
+app.use(cors());
+
 const db = createClient({
   url: process.env.TURSO_DATABASE_URL,
   authToken: process.env.TURSO_AUTH_TOKEN
 });
 
-app.use(cors());
-app.use(express.json());
+// Init tables
+db.execute(`CREATE TABLE IF NOT EXISTS patients (id INTEGER PRIMARY KEY, name TEXT, phone TEXT, birth_date DATE, address TEXT, bpjs_number TEXT)`);
+db.execute(`CREATE TABLE IF NOT EXISTS doctors (id INTEGER PRIMARY KEY, name TEXT, speciality TEXT, schedule TEXT)`);
+db.execute(`CREATE TABLE IF NOT EXISTS appointments (id INTEGER PRIMARY KEY, patient_name TEXT, doctor_name TEXT, schedule DATETIME, status TEXT, notes TEXT)`);
 
-const handleError = (res, err) => {
-  console.error(err);
-  res.status(500).json({ error: 'Database error' });
-};
-
-app.get('/api/:entity', async (req, res) => {
-  const { entity } = req.params;
+// CRUD Patients
+app.get('/api/patients', async (req, res) => {
   const { page = 1, limit = 10 } = req.query;
   const offset = (page - 1) * limit;
-
-  try {
-    const result = await db.execute({
-      sql: `SELECT * FROM ?? LIMIT ? OFFSET ?`,
-      args: [entity, parseInt(limit), parseInt(offset)]
-    });
-    res.json(result.rows);
-  } catch (err) {
-    handleError(res, err);
-  }
+  const result = await db.execute({ sql: 'SELECT * FROM patients LIMIT ? OFFSET ?', args: [limit, offset] });
+  res.json(result.rows);
 });
 
-app.post('/api/:entity', async (req, res) => {
-  const { entity } = req.params;
-  const data = req.body;
-  const keys = Object.keys(data);
-  const values = Object.values(data);
-  
-  try {
-    await db.execute({
-      sql: `INSERT INTO ?? (${keys.join(', ')}) VALUES (${keys.map(() => '?').join(', ')})`,
-      args: [entity, ...values]
-    });
-    res.status(201).json({ message: 'Success' });
-  } catch (err) {
-    handleError(res, err);
-  }
+app.post('/api/patients', async (req, res) => {
+  const { name, phone, birth_date, address, bpjs_number } = req.body;
+  await db.execute({ 
+    sql: 'INSERT INTO patients (name, phone, birth_date, address, bpjs_number) VALUES (?, ?, ?, ?, ?)', 
+    args: [name, phone, birth_date, address, bpjs_number] 
+  });
+  res.status(201).send('Pasien created');
 });
 
-app.put('/api/:entity/:id', async (req, res) => {
-  const { entity, id } = req.params;
-  const data = req.body;
-  const setClause = Object.keys(data).map(k => `${k} = ?`).join(', ');
-  
-  try {
-    await db.execute({
-      sql: `UPDATE ?? SET ${setClause} WHERE ${Object.keys(data)[0].replace(/\d+/, '')}_id = ?`,
-      args: [entity, ...Object.values(data), id]
-    });
-    res.json({ message: 'Updated' });
-  } catch (err) {
-    handleError(res, err);
-  }
+// CRUD Appointments
+app.get('/api/appointments', async (req, res) => {
+  const result = await db.execute('SELECT * FROM appointments');
+  res.json(result.rows);
 });
 
-app.listen(3000, () => console.log('Server running on port 3000'));
+app.post('/api/appointments', async (req, res) => {
+  const { patient_name, doctor_name, schedule, status, notes } = req.body;
+  await db.execute({
+    sql: 'INSERT INTO appointments (patient_name, doctor_name, schedule, status, notes) VALUES (?, ?, ?, ?, ?)',
+    args: [patient_name, doctor_name, schedule, status, notes]
+  });
+  res.status(201).send('Janji created');
+});
+
+// CRUD Doctors
+app.get('/api/doctors', async (req, res) => {
+  const result = await db.execute('SELECT * FROM doctors');
+  res.json(result.rows);
+});
+
+app.listen(3000, () => console.log('Server running port 3000'));
