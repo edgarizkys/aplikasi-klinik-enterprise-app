@@ -8,7 +8,8 @@ class PaymentGatewayService {
     }
 
     async createQrisTransaction(orderId, amount, customerInfo = {}) {
-        if (!orderId || !amount) throw new Error('Invalid transaction data');
+        if (!orderId || !amount) throw new Error('Data transaksi tidak lengkap');
+        
         const referenceNo = `QRIS-${orderId}-${Date.now()}`;
         return {
             success: true,
@@ -25,7 +26,8 @@ class PaymentGatewayService {
     }
 
     async createVirtualAccountTransaction(orderId, amount, bank = 'BCA') {
-        if (!orderId || !amount) throw new Error('Invalid transaction data');
+        if (!orderId || !amount) throw new Error('Data transaksi tidak lengkap');
+
         const vaNumber = `88008${Math.floor(10000000 + Math.random() * 90000000)}`;
         return {
             success: true,
