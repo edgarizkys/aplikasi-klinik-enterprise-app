@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Aplikasi Klinik Enterprise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --accent: #0EA5E9; }
+        .sidebar-item:hover { background: #6366F1; }
+    </style>
+</head>
+<body class="bg-gray-100 flex h-screen">
+    <aside class="w-64 bg-gray-900 text-white p-6">
+        <h1 class="text-xl font-bold mb-10 text-[#0EA5E9]">Klinik Enterprise</h1>
+        <nav class="space-y-4">
+            <button onclick="render('patients')" class="w-full text-left p-2 sidebar-item rounded">Pasien</button>
+            <button onclick="render('appointments')" class="w-full text-left p-2 sidebar-item rounded">Janji Temu</button>
+            <button onclick="render('medications')" class="w-full text-left p-2 sidebar-item rounded">Obat</button>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto">
+        <header class="flex justify-between mb-8">
+            <h2 id="view-title" class="text-2xl font-bold">Dashboard</h2>
+            <button class="bg-[#6366F1] text-white px-4 py-2 rounded">Tambah Data</button>
+        </header>
+        
+        <div id="content" class="bg-white p-6 rounded-lg shadow">
+            <table class="w-full text-left">
+                <thead id="table-head"></thead>
+                <tbody id="table-body"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        const data = {
+            patients: [{id: 1, name: 'Andi', dob: '1990-05-12', medical_record_number: 'RM001'}],
+            appointments: [{id: 1, patient_id: 1, doctor: 'Dr. Siti', time: '2023-10-27T09:00:00', status: 'scheduled'}],
+            medications: [{id: 1, name: 'Paracetamol', stock: 100, price: 5000}]
+        };
+
+        function render(entity) {
+            document.getElementById('view-title').innerText = entity.toUpperCase();
+            const body = document.getElementById('table-body');
+            body.innerHTML = data[entity].map(item => `
+                <tr class="border-b">
+                    ${Object.values(item).map(val => `<td class="p-3">${val}</td>`).join('')}
+                </tr>
+            `).join('');
+        }
+        render('patients');
+    </script>
+</body>
+</html>
