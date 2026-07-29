@@ -1,85 +1,64 @@
-// controllers/clinicController.js
-const { tursoClient } = require('../config/database');
-
-const getTenant = (req) => req.headers['x-tenant-id'] || 'default_tenant';
-
-exports.getItems = async (req, res) => {
-    try {
-        const { entity } = req.params;
-        const tenantId = getTenant(req);
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
-        const offset = (page - 1) * limit;
-
-        const data = await tursoClient.execute({
-            sql: `SELECT * FROM ${entity} WHERE tenant_id = ? LIMIT ? OFFSET ?`,
-            args: [tenantId, limit, offset]
-        });
-
-        const count = await tursoClient.execute({
-            sql: `SELECT COUNT(*) as total FROM ${entity} WHERE tenant_id = ?`,
-            args: [tenantId]
-        });
-
-        res.json({
-            success: true,
-            data: data.rows,
-            pagination: { page, limit, total: count.rows[0].total }
-        });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-};
-
-exports.createItem = async (req, res) => {
-    try {
-        const { entity } = req.params;
-        const tenantId = getTenant(req);
-        const keys = Object.keys(req.body);
-        const values = Object.values(req.body);
-        
-        const sql = `INSERT INTO ${entity} (tenant_id, ${keys.join(', ')}) VALUES (?, ${keys.map(() => '?').join(', ')})`;
-        const result = await tursoClient.execute({
-            sql,
-            args: [tenantId, ...values]
-        });
-
-        res.status(201).json({ success: true, id: Number(result.lastInsertRowid) });
-    } catch (e) {
-        res.status(400).json({ error: e.message });
-    }
-};
-
 // routes/api.js
 const express = require('express');
 const router = express.Router();
-const ctrl = require('../controllers/clinicController');
+const controller = require('../controllers/appController');
 
-router.get('/:entity', ctrl.getItems);
-router.post('/:entity', ctrl.createItem);
+// Middleware: tenant validation
+const validateTenant = (req, res, next) => {
+    if (!req.headers['x-tenant-id']) return res.status(400).json({ error: 'Tenant ID wajib' });
+    next();
+};
+
+router.use(validateTenant);
+
+// Pasien
+router.get('/patients', controller.getAllPatients);
+router.post('/patients', controller.createPatient);
+
+// Dokter
+router.get('/doctors', controller.getAllDoctors);
+router.post('/doctors', controller.createDoctor);
+
+// Janji Temu
+router.get('/appointments', controller.getAllAppointments);
+router.post('/appointments', controller.createAppointment);
+
+// Rekam Medis
+router.get('/medical-records', controller.getAllMedicalRecords);
+router.post('/medical-records', controller.createMedicalRecord);
+
+// Faktur
+router.get('/invoices', controller.getAllInvoices);
+router.post('/invoices', controller.createInvoice);
 
 module.exports = router;
 
-// frontend/components/ClinicTable.jsx
-/* 
-Tailwind classes: bg-[#0EA5E9] hover:bg-[#6366F1] transition-all
-Use for buttons and headers.
-*/
-const ClinicTable = ({ data, columns }) => (
-    <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200">
-            <thead className="bg-[#0EA5E9] text-white">
-                <tr>
-                    {columns.map(c => <th key={c.key} className="p-3">{c.label}</th>)}
-                </tr>
-            </thead>
-            <tbody>
-                {data.map((row, i) => (
-                    <tr key={i} className="border-b hover:bg-gray-50">
-                        {columns.map(c => <td key={c.key} className="p-3">{row[c.key]}</td>)}
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    </div>
-);
+// controllers/appController.js
+const { tursoClient } = require('../config/database');
+
+const handleQuery = async (res, sql, args) => {
+    try {
+        const result = await tursoClient.execute({ sql, args });
+        res.json({ success: true, data: result.rows });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+};
+
+exports.getAllPatients = (req, res) => handleQuery(res, 'SELECT * FROM patients WHERE tenant_id = ?', [req.headers['x-tenant-id']]);
+
+exports.createPatient = async (req, res) => {
+    const { patient_id, name, dob, gender, address, phone, insurance_provider, medical_history_summary } = req.body;
+    try {
+        await tursoClient.execute({
+            sql: `INSERT INTO patients (tenant_id, patient_id, name, dob, gender, address, phone, insurance_provider, medical_history_summary) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            args: [req.headers['x-tenant-id'], patient_id, name, dob, gender, address, phone, insurance_provider, medical_history_summary]
+        });
+        res.status(201).json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+};
+
+// Repeat pattern for doctors, appointments, medical_records, invoices...
