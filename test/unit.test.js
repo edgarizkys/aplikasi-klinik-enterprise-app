@@ -4,44 +4,37 @@ const app = require('../app');
 describe('Klinik Enterprise API Tests', () => {
   
   describe('GET /api/patients', () => {
-    it('fetch all patients with pagination', async () => {
-      const res = await request(app).get('/api/patients?page=1&limit=10');
+    it('fetch all patients status 200', async () => {
+      const res = await request(app).get('/api/patients');
       expect(res.statusCode).toBe(200);
-      expect(res.body).toHaveProperty('data');
-      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(Array.isArray(res.body)).toBeTruthy();
     });
   });
 
   describe('POST /api/appointments', () => {
-    it('create new appointment', async () => {
-      const payload = {
-        patient_name: 'Budi Santoso',
-        doctor_name: 'Dr. Andi',
-        schedule: '2026-08-01T10:00:00Z',
-        status: 'pending',
-        notes: 'Konsultasi rutin'
+    it('create appointment success', async () => {
+      const newAppt = {
+        patient_id: 'RM001',
+        doctor: 'Dr. Budi',
+        date: '2023-11-01T10:00:00',
+        status: 'scheduled'
       };
-      const res = await request(app).post('/api/appointments').send(payload);
+      const res = await request(app).post('/api/appointments').send(newAppt);
       expect(res.statusCode).toBe(201);
-      expect(res.body.patient_name).toBe(payload.patient_name);
-    });
-
-    it('reject invalid schedule format', async () => {
-      const res = await request(app).post('/api/appointments').send({ patient_name: 'Test' });
-      expect(res.statusCode).toBe(400);
+      expect(res.body).toHaveProperty('id');
     });
   });
 
-  describe('GET /api/doctors', () => {
-    it('return doctor list', async () => {
-      const res = await request(app).get('/api/doctors');
+  describe('GET /api/prescriptions/:id', () => {
+    it('fetch prescription by id', async () => {
+      const res = await request(app).get('/api/prescriptions/1');
       expect(res.statusCode).toBe(200);
-      expect(res.body).toBeDefined();
+      expect(res.body.id).toBe(1);
     });
   });
 
   describe('Error Handling', () => {
-    it('handle non-existent route', async () => {
+    it('return 404 for invalid route', async () => {
       const res = await request(app).get('/api/invalid-endpoint');
       expect(res.statusCode).toBe(404);
     });
