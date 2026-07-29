@@ -23,8 +23,7 @@ module.exports = function rateLimiter(req, res, next) {
 
     if (record.count > maxRequests) {
         return res.status(429).json({ 
-            error: 'Terlalu banyak permintaan',
-            message: 'Batas limit tercapai. Coba lagi nanti.' 
+            error: 'Batas permintaan terlampaui. Coba lagi nanti.' 
         });
     }
 
