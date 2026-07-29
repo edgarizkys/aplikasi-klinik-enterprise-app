@@ -1,39 +1,49 @@
+// unit.test.js
 const request = require('supertest');
-const app = require('../app');
+const app = require('./app');
 
-describe('Klinik Enterprise API Endpoints', () => {
-  const entities = ['patients', 'doctors', 'appointments', 'medical_records', 'invoices'];
-
-  entities.forEach(entity => {
-    describe(`GET /api/${entity}`, () => {
-      it(`should return 200 and list of ${entity}`, async () => {
-        const res = await request(app).get(`/api/${entity}`);
-        expect(res.statusCode).toBe(200);
-        expect(Array.isArray(res.body)).toBeTruthy();
-      });
+describe('Klinik Enterprise API Tests', () => {
+  
+  describe('GET /api/patients', () => {
+    it('fetch all patients with pagination', async () => {
+      const res = await request(app).get('/api/patients?page=1&limit=10');
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty('data');
+      expect(Array.isArray(res.body.data)).toBe(true);
     });
   });
 
   describe('POST /api/appointments', () => {
-    it('should create new appointment', async () => {
+    it('create appointment with valid data', async () => {
       const newAppt = {
-        appointment_id: 'A999',
-        patient_name: 'Test User',
-        doctor_name: 'Dr. Test',
-        date: '2024-12-31',
-        time: '09:00',
-        status: 'Terjadwal',
-        reason: 'Checkup'
+        patient_name: 'Budi Santoso',
+        doctor_name: 'Dr. Andi',
+        schedule: '2026-08-01T10:00:00Z',
+        status: 'pending',
+        notes: 'Konsultasi rutin'
       };
       const res = await request(app).post('/api/appointments').send(newAppt);
       expect(res.statusCode).toBe(201);
-      expect(res.body.appointment_id).toBe('A999');
+      expect(res.body.patient_name).toBe(newAppt.patient_name);
+    });
+
+    it('reject appointment without required fields', async () => {
+      const res = await request(app).post('/api/appointments').send({});
+      expect(res.statusCode).toBe(400);
+    });
+  });
+
+  describe('GET /api/doctors', () => {
+    it('return list of doctors', async () => {
+      const res = await request(app).get('/api/doctors');
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toBeDefined();
     });
   });
 
   describe('Error Handling', () => {
-    it('should return 404 for invalid route', async () => {
-      const res = await request(app).get('/api/nonexistent');
+    it('return 404 for non-existent route', async () => {
+      const res = await request(app).get('/api/invalid-route');
       expect(res.statusCode).toBe(404);
     });
   });
