@@ -1,29 +1,35 @@
+# README.md
+
 # Aplikasi Klinik Enterprise
 
-Sistem manajemen klinik terintegrasi. Fitur: CRUD Pasien, Jadwal Dokter, Rekam Medis, Pembayaran, Laporan Keuangan, Antrian Online.
+Sistem manajemen klinik terintegrasi. Fitur: Rekam Medis, Jadwal Dokter, Resep, Laporan.
 
-## Tech Stack
-- Backend: Node.js, Express.js
-- Database: Turso SQLite (LibSQL)
-- Frontend: React, Tailwind CSS
-- Styling: #14B8A6 (Teal) to #0EA5E9 (Sky)
+## Stack
+- Backend: Express.js
+- Database: Turso SQLite
+- Frontend: Tailwind CSS
+- Styling: #0EA5E9 to #6366F1 gradient
 
-## Struktur Entitas
-1. **Pasien**: Data demografi, BPJS.
-2. **Dokter**: Spesialisasi, jadwal praktik.
-3. **Janji**: Antrian, status, catatan medis.
+## Struktur Data
+1. **Pasien**: Data demografi & rekam medis.
+2. **Janji Temu**: Penjadwalan & status kunjungan.
+3. **Resep**: Manajemen obat & dosis.
 
 ## Instalasi
 1. `npm install`
-2. Konfigurasi `TURSO_DB_URL` & `TURSO_AUTH_TOKEN` di `.env`.
+2. Set `TURSO_DB_URL` & `TURSO_AUTH_TOKEN` di `.env`.
 3. `npm run migrate`
-4. `npm run dev`
+4. `npm start`
 
 ## API Endpoints
 - `GET /api/patients` - List pasien
-- `POST /api/appointments` - Buat janji
-- `GET /api/doctors` - Jadwal dokter
-- `GET /api/reports` - Laporan keuangan
+- `POST /api/appointments` - Buat janji temu
+- `GET /api/prescriptions` - Lihat resep
+
+## Fitur Utama
+- **Rekam Medis Elektronik**: Akses riwayat pasien cepat.
+- **Manajemen Resep**: Digitalisasi pemberian obat.
+- **Laporan Kunjungan**: Analitik performa klinik.
 
 ## Lisensi
-MIT.
+Proprietary - Klinik Enterprise.
