@@ -3,13 +3,11 @@ const crypto = require('crypto');
 
 class PaymentGatewayService {
     constructor() {
-        this.serverKey = process.env.PAYMENT_GATEWAY_KEY || 'secret';
-        this.merchantId = process.env.PAYMENT_MERCHANT_ID || 'M-001';
+        this.serverKey = process.env.PAYMENT_GATEWAY_KEY || 'sk_live_klinik_enterprise';
+        this.merchantId = process.env.PAYMENT_MERCHANT_ID || 'M-KLINIK-001';
     }
 
-    async createQrisTransaction(orderId, amount, customerInfo = {}) {
-        if (!orderId || !amount) throw new Error('Data transaksi tidak lengkap');
-        
+    async createQrisTransaction(orderId, amount, patientData = {}) {
         const referenceNo = `QRIS-${orderId}-${Date.now()}`;
         return {
             success: true,
@@ -20,14 +18,12 @@ class PaymentGatewayService {
             currency: 'IDR',
             qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${referenceNo}`,
             deepLink: `gopay://pay?amount=${amount}&ref=${referenceNo}`,
-            customer: customerInfo.name || 'Pasien',
+            patient: patientData.name || 'Pasien Umum',
             expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString()
         };
     }
 
     async createVirtualAccountTransaction(orderId, amount, bank = 'BCA') {
-        if (!orderId || !amount) throw new Error('Data transaksi tidak lengkap');
-
         const vaNumber = `88008${Math.floor(10000000 + Math.random() * 90000000)}`;
         return {
             success: true,
@@ -35,20 +31,26 @@ class PaymentGatewayService {
             orderId,
             amount,
             vaNumber,
-            instructions: `Transfer ke ${bank.toUpperCase()} VA: ${vaNumber} sebelum 24 jam.`,
+            instructions: `Transfer ke ${bank.toUpperCase()} VA: ${vaNumber} untuk pembayaran layanan klinik.`,
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        };
+    }
+
+    async processBpjsClaim(appointmentId, bpjsNumber) {
+        if (!bpjsNumber) throw new Error('Nomor BPJS wajib diisi');
+        return {
+            success: true,
+            status: 'PENDING_VERIFICATION',
+            claimId: `BPJS-${appointmentId}-${Date.now()}`,
+            message: 'Klaim BPJS diajukan ke sistem verifikasi pusat.'
         };
     }
 
     verifyWebhookSignature(payload, signature) {
         if (!signature) return false;
-        try {
-            const expectedSig = crypto.createHmac('sha256', this.serverKey)
-                .update(JSON.stringify(payload)).digest('hex');
-            return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig));
-        } catch (err) {
-            return false;
-        }
+        const expectedSig = crypto.createHmac('sha256', this.serverKey)
+            .update(JSON.stringify(payload)).digest('hex');
+        return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig));
     }
 }
 
