@@ -44,7 +44,7 @@ exports.createItem = async (req, res) => {
             args: [tenantId, ...values]
         });
 
-        res.status(201).json({ success: true, id: Number(result.lastInsertRowid) });
+        res.status(201).json({ success: true, id: result.lastInsertRowid });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
     }
@@ -54,7 +54,7 @@ exports.updateItem = async (req, res) => {
     try {
         const { entity, id } = req.params;
         const tenantId = getTenant(req);
-        const updates = Object.keys(req.body).map(k => `${k} = ?`).join(', ');
+        const updates = Object.entries(req.body).map(([k, v]) => `${k} = ?`).join(', ');
         
         await tursoClient.execute({
             sql: `UPDATE ${entity} SET ${updates} WHERE id = ? AND tenant_id = ?`,
