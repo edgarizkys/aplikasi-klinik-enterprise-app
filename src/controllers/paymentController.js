@@ -10,39 +10,33 @@ const db = createClient({
 exports.processPayment = async (req, res) => {
   try {
     const { orderId, amount, method, bank, tenantId } = req.body;
-    
-    if (!orderId || !amount || !tenantId) {
-      return res.status(400).json({ error: 'Data tidak lengkap' });
-    }
+    if (!orderId || !amount || !method) return res.status(400).json({ error: 'Data kurang' });
 
     let result;
     if (method === 'QRIS') {
       result = await paymentService.createQrisTransaction(orderId, amount);
     } else if (method === 'VA') {
       result = await paymentService.createVirtualAccountTransaction(orderId, amount, bank);
-    } else {
-      return res.status(400).json({ error: 'Metode tidak didukung' });
     }
 
     await db.execute({
-      sql: 'INSERT INTO payments (order_id, tenant_id, amount, status, reference_no) VALUES (?, ?, ?, ?, ?)',
-      args: [orderId, tenantId, amount, 'pending', result.referenceNo || result.vaNumber]
+      sql: 'INSERT INTO payments (order_id, tenant_id, amount, status, provider, ref_no) VALUES (?, ?, ?, ?, ?, ?)',
+      args: [orderId, tenantId, amount, 'pending', result.provider, result.referenceNo || result.vaNumber]
     });
 
-    res.status(200).json(result);
+    res.status(201).json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Gagal proses pembayaran' });
   }
 };
 
 exports.handleWebhook = async (req, res) => {
   const signature = req.headers['x-payment-signature'];
-  const isValid = paymentService.verifyWebhookSignature(req.body, signature);
-
-  if (!isValid) return res.status(403).json({ error: 'Signature invalid' });
+  if (!paymentService.verifyWebhookSignature(req.body, signature)) {
+    return res.status(403).json({ error: 'Signature tidak valid' });
+  }
 
   const { order_id, status } = req.body;
-  
   try {
     await db.execute({
       sql: 'UPDATE payments SET status = ? WHERE order_id = ?',
@@ -50,13 +44,12 @@ exports.handleWebhook = async (req, res) => {
     });
     res.status(200).send('OK');
   } catch (err) {
-    res.status(500).json({ error: 'Database update failed' });
+    res.status(500).json({ error: 'Gagal update status' });
   }
 };
 
 exports.getPaymentHistory = async (req, res) => {
-  const { tenantId } = req.params;
-  const page = parseInt(req.query.page) || 1;
+  const { tenantId, page = 1 } = req.query;
   const limit = 10;
   const offset = (page - 1) * limit;
 
@@ -65,8 +58,8 @@ exports.getPaymentHistory = async (req, res) => {
       sql: 'SELECT * FROM payments WHERE tenant_id = ? LIMIT ? OFFSET ?',
       args: [tenantId, limit, offset]
     });
-    res.status(200).json(rs.rows);
+    res.json(rs.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Gagal ambil data' });
   }
 };
