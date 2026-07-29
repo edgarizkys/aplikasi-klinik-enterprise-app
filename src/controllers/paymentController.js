@@ -1,37 +1,38 @@
-// controllers/paymentController.js
 const paymentService = require('../services/paymentService');
 
-const createPayment = async (req, res) => {
+exports.createQris = async (req, res) => {
     try {
-        const { orderId, amount, type, bank, customerInfo } = req.body;
-        const tenantId = req.headers['x-tenant-id'];
-
-        if (!tenantId) return res.status(400).json({ error: 'Tenant ID wajib' });
-
-        let result;
-        if (type === 'QRIS') {
-            result = await paymentService.createQrisTransaction(orderId, amount, customerInfo);
-        } else if (type === 'VA') {
-            result = await paymentService.createVirtualAccountTransaction(orderId, amount, bank);
-        } else {
-            return res.status(400).json({ error: 'Tipe pembayaran tidak valid' });
+        const { orderId, amount, customerInfo } = req.body;
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid amount' });
         }
-
-        res.status(201).json({ success: true, data: { ...result, tenantId } });
-    } catch (err) {
-        res.status(500).json({ error: 'Gagal proses pembayaran', details: err.message });
+        const result = await paymentService.createQrisTransaction(orderId || Date.now(), amount, customerInfo);
+        res.json(result);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
     }
 };
 
-const handleWebhook = (req, res) => {
-    const signature = req.headers['x-payment-signature'];
-    const isValid = paymentService.verifyWebhookSignature(req.body, signature);
-
-    if (!isValid) return res.status(403).json({ error: 'Signature tidak valid' });
-
-    // Logic update status database Turso
-    console.log('Webhook diterima:', req.body);
-    res.status(200).json({ status: 'OK' });
+exports.createVa = async (req, res) => {
+    try {
+        const { orderId, amount, bank } = req.body;
+        const result = await paymentService.createVirtualAccountTransaction(orderId || Date.now(), amount, bank || 'BCA');
+        res.json(result);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 };
 
-module.exports = { createPayment, handleWebhook };
+exports.handleWebhook = async (req, res) => {
+    try {
+        const signature = req.headers['x-callback-signature'] || req.headers['x-signature'];
+        const isValid = paymentService.verifyWebhookSignature(req.body, signature);
+        if (!isValid) {
+            return res.status(403).json({ error: 'Invalid Payment Webhook Signature' });
+        }
+        console.log('[PAYMENT WEBHOOK VERIFIED]', req.body);
+        res.json({ success: true, message: 'Webhook Processed' });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
