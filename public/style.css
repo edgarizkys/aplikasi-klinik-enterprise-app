@@ -5,19 +5,18 @@
 @layer base {
   :root {
     --primary: #0EA5E9;
-    --primary-dark: #0369A1;
-    --accent: #14B8A6;
-    --bg-app: #F0F9FF;
+    --primary-dark: #14B8A6;
+    --bg-app: #f8fafc;
   }
 
   body {
-    @apply bg-[var(--bg-app)] text-slate-800 font-sans antialiased;
+    @apply bg-[var(--bg-app)] text-slate-900 font-sans antialiased;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white px-4 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply bg-gradient-to-r from-[var(--primary-dark)] to-[var(--primary)] text-white px-4 py-2 rounded-lg shadow-md hover:opacity-90 transition-all;
   }
 
   .card {
@@ -25,26 +24,30 @@
   }
 
   .input-field {
-    @apply w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none transition-all;
+    @apply w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none transition-all;
   }
 
-  .badge-status {
-    @apply px-2 py-1 rounded-full text-xs font-semibold uppercase tracking-wider;
+  .table-container {
+    @apply overflow-x-auto rounded-lg border border-slate-200;
   }
 
-  .sidebar-item {
-    @apply flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-sky-50 hover:text-[var(--primary)] transition-colors rounded-lg;
+  .badge {
+    @apply px-2 py-1 rounded-full text-xs font-semibold;
   }
 
-  .table-header {
-    @apply bg-slate-50 text-slate-500 uppercase text-xs font-bold tracking-wider px-6 py-4;
+  .badge-status-active {
+    @apply bg-emerald-100 text-emerald-700;
+  }
+
+  .badge-status-pending {
+    @apply bg-sky-100 text-sky-700;
   }
 }
 
-.gradient-header {
-  background: linear-gradient(135deg, var(--primary), var(--accent));
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary-dark)] to-[var(--primary)];
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+.sidebar-active {
+  @apply bg-sky-50 border-r-4 border-[var(--primary)];
 }
