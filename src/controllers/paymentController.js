@@ -1,65 +1,37 @@
 // controllers/paymentController.js
 const paymentService = require('../services/paymentService');
-const { createClient } = require('@libsql/client');
 
-const db = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN
-});
+const createPayment = async (req, res) => {
+    try {
+        const { orderId, amount, type, bank, customerInfo } = req.body;
+        const tenantId = req.headers['x-tenant-id'];
 
-exports.processPayment = async (req, res) => {
-  try {
-    const { orderId, amount, method, bank, tenantId } = req.body;
-    if (!orderId || !amount || !method) return res.status(400).json({ error: 'Data kurang' });
+        if (!tenantId) return res.status(400).json({ error: 'Tenant ID wajib' });
 
-    let result;
-    if (method === 'QRIS') {
-      result = await paymentService.createQrisTransaction(orderId, amount);
-    } else if (method === 'VA') {
-      result = await paymentService.createVirtualAccountTransaction(orderId, amount, bank);
+        let result;
+        if (type === 'QRIS') {
+            result = await paymentService.createQrisTransaction(orderId, amount, customerInfo);
+        } else if (type === 'VA') {
+            result = await paymentService.createVirtualAccountTransaction(orderId, amount, bank);
+        } else {
+            return res.status(400).json({ error: 'Tipe pembayaran tidak valid' });
+        }
+
+        res.status(201).json({ success: true, data: { ...result, tenantId } });
+    } catch (err) {
+        res.status(500).json({ error: 'Gagal proses pembayaran', details: err.message });
     }
-
-    await db.execute({
-      sql: 'INSERT INTO payments (order_id, tenant_id, amount, status, provider, ref_no) VALUES (?, ?, ?, ?, ?, ?)',
-      args: [orderId, tenantId, amount, 'pending', result.provider, result.referenceNo || result.vaNumber]
-    });
-
-    res.status(201).json(result);
-  } catch (err) {
-    res.status(500).json({ error: 'Gagal proses pembayaran' });
-  }
 };
 
-exports.handleWebhook = async (req, res) => {
-  const signature = req.headers['x-payment-signature'];
-  if (!paymentService.verifyWebhookSignature(req.body, signature)) {
-    return res.status(403).json({ error: 'Signature tidak valid' });
-  }
+const handleWebhook = (req, res) => {
+    const signature = req.headers['x-payment-signature'];
+    const isValid = paymentService.verifyWebhookSignature(req.body, signature);
 
-  const { order_id, status } = req.body;
-  try {
-    await db.execute({
-      sql: 'UPDATE payments SET status = ? WHERE order_id = ?',
-      args: [status, order_id]
-    });
-    res.status(200).send('OK');
-  } catch (err) {
-    res.status(500).json({ error: 'Gagal update status' });
-  }
+    if (!isValid) return res.status(403).json({ error: 'Signature tidak valid' });
+
+    // Logic update status database Turso
+    console.log('Webhook diterima:', req.body);
+    res.status(200).json({ status: 'OK' });
 };
 
-exports.getPaymentHistory = async (req, res) => {
-  const { tenantId, page = 1 } = req.query;
-  const limit = 10;
-  const offset = (page - 1) * limit;
-
-  try {
-    const rs = await db.execute({
-      sql: 'SELECT * FROM payments WHERE tenant_id = ? LIMIT ? OFFSET ?',
-      args: [tenantId, limit, offset]
-    });
-    res.json(rs.rows);
-  } catch (err) {
-    res.status(500).json({ error: 'Gagal ambil data' });
-  }
-};
+module.exports = { createPayment, handleWebhook };
