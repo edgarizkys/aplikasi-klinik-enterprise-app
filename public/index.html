@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Klinik Enterprise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { primary: '#6366F1', secondary: '#0EA5E9' } } }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-primary">Klinik Enterprise</h1>
+            <div class="space-x-4">
+                <button onclick="loadView('patients')" class="text-gray-600 hover:text-primary">Pasien</button>
+                <button onclick="loadView('appointments')" class="text-gray-600 hover:text-primary">Janji Temu</button>
+                <button onclick="loadView('medications')" class="text-gray-600 hover:text-primary">Obat</button>
+            </div>
+        </div>
+    </nav>
+
+    <main id="app" class="max-w-7xl mx-auto p-6">
+        <div id="content" class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-2xl font-semibold mb-4">Dashboard Klinik</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-4 bg-primary text-white rounded-lg">Total Pasien: <span id="count-patients">0</span></div>
+                <div class="p-4 bg-secondary text-white rounded-lg">Janji Temu Hari Ini: <span id="count-apps">0</span></div>
+                <div class="p-4 bg-indigo-600 text-white rounded-lg">Stok Obat Rendah: <span id="count-meds">0</span></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        async function loadView(entity) {
+            const res = await fetch(`/api/${entity}`);
+            const data = await res.json();
+            const content = document.getElementById('content');
+            content.innerHTML = `<h2 class="text-xl font-bold mb-4 capitalize">${entity}</h2>
+                <table class="w-full text-left border-collapse">
+                    <thead><tr class="border-b">${Object.keys(data[0] || {}).map(k => `<th class="p-2">${k}</th>`).join('')}</tr></thead>
+                    <tbody>${data.map(row => `<tr class="border-b">${Object.values(row).map(v => `<td class="p-2">${v}</td>`).join('')}</tr>`).join('')}</tbody>
+                </table>`;
+        }
+    </script>
+</body>
+</html>
