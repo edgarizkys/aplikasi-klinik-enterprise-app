@@ -6,10 +6,7 @@
     <title>Login - Aplikasi Klinik Enterprise</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --accent-from: #14B8A6;
-            --accent-to: #0EA5E9;
-        }
+        :root { --accent-from: #14B8A6; --accent-to: #0EA5E9; }
         .gradient-bg { background: linear-gradient(135deg, var(--accent-from), var(--accent-to)); }
     </style>
 </head>
@@ -17,7 +14,7 @@
     <div class="w-full max-w-md bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700">
         <div class="text-center mb-8">
             <h1 class="text-2xl font-bold text-white">Aplikasi Klinik Enterprise</h1>
-            <p class="text-gray-400">Masuk ke akun Anda</p>
+            <p class="text-gray-400">Masuk untuk mengelola klinik</p>
         </div>
         <form id="loginForm" class="space-y-6">
             <div>
@@ -28,9 +25,7 @@
                 <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
                 <input type="password" id="password" required class="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-600 text-white focus:ring-2 focus:ring-teal-500 outline-none">
             </div>
-            <button type="submit" class="w-full py-3 rounded-lg font-bold text-white gradient-bg hover:opacity-90 transition">
-                Masuk
-            </button>
+            <button type="submit" class="w-full py-3 rounded-lg font-bold text-white gradient-bg hover:opacity-90 transition">Masuk</button>
         </form>
     </div>
     <script>
@@ -38,7 +33,6 @@
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            
             try {
                 const res = await fetch('/api/auth/login', {
                     method: 'POST',
@@ -47,9 +41,7 @@
                 });
                 if (res.ok) window.location.href = '/dashboard.html';
                 else alert('Login gagal');
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) { console.error(err); }
         });
     </script>
 </body>
