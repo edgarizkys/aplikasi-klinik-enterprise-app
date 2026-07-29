@@ -11,7 +11,10 @@ const db = createClient({
 app.use(cors());
 app.use(express.json());
 
-const handleError = (res, err) => res.status(500).json({ error: err.message });
+const handleError = (res, err) => {
+  console.error(err);
+  res.status(500).json({ error: 'Database error' });
+};
 
 app.get('/api/:entity', async (req, res) => {
   const { entity } = req.params;
@@ -20,8 +23,8 @@ app.get('/api/:entity', async (req, res) => {
 
   try {
     const result = await db.execute({
-      sql: `SELECT * FROM ${entity} LIMIT ? OFFSET ?`,
-      args: [Number(limit), Number(offset)]
+      sql: `SELECT * FROM ?? LIMIT ? OFFSET ?`,
+      args: [entity, parseInt(limit), parseInt(offset)]
     });
     res.json(result.rows);
   } catch (err) {
@@ -37,8 +40,8 @@ app.post('/api/:entity', async (req, res) => {
   
   try {
     await db.execute({
-      sql: `INSERT INTO ${entity} (${keys.join(',')}) VALUES (${keys.map(() => '?').join(',')})`,
-      args: values
+      sql: `INSERT INTO ?? (${keys.join(', ')}) VALUES (${keys.map(() => '?').join(', ')})`,
+      args: [entity, ...values]
     });
     res.status(201).json({ message: 'Success' });
   } catch (err) {
@@ -49,12 +52,12 @@ app.post('/api/:entity', async (req, res) => {
 app.put('/api/:entity/:id', async (req, res) => {
   const { entity, id } = req.params;
   const data = req.body;
-  const sets = Object.keys(data).map(k => `${k} = ?`).join(', ');
+  const setClause = Object.keys(data).map(k => `${k} = ?`).join(', ');
   
   try {
     await db.execute({
-      sql: `UPDATE ${entity} SET ${sets} WHERE id = ?`,
-      args: [...Object.values(data), id]
+      sql: `UPDATE ?? SET ${setClause} WHERE ${Object.keys(data)[0].replace(/\d+/, '')}_id = ?`,
+      args: [entity, ...Object.values(data), id]
     });
     res.json({ message: 'Updated' });
   } catch (err) {
@@ -62,18 +65,4 @@ app.put('/api/:entity/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/:entity/:id', async (req, res) => {
-  const { entity, id } = req.params;
-  try {
-    await db.execute({
-      sql: `DELETE FROM ${entity} WHERE id = ?`,
-      args: [id]
-    });
-    res.json({ message: 'Deleted' });
-  } catch (err) {
-    handleError(res, err);
-  }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(3000, () => console.log('Server running on port 3000'));
