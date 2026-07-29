@@ -1,64 +1,80 @@
-// routes/api.js
-const express = require('express');
-const router = express.Router();
-const controller = require('../controllers/appController');
-
-// Middleware: tenant validation
-const validateTenant = (req, res, next) => {
-    if (!req.headers['x-tenant-id']) return res.status(400).json({ error: 'Tenant ID wajib' });
-    next();
-};
-
-router.use(validateTenant);
-
-// Pasien
-router.get('/patients', controller.getAllPatients);
-router.post('/patients', controller.createPatient);
-
-// Dokter
-router.get('/doctors', controller.getAllDoctors);
-router.post('/doctors', controller.createDoctor);
-
-// Janji Temu
-router.get('/appointments', controller.getAllAppointments);
-router.post('/appointments', controller.createAppointment);
-
-// Rekam Medis
-router.get('/medical-records', controller.getAllMedicalRecords);
-router.post('/medical-records', controller.createMedicalRecord);
-
-// Faktur
-router.get('/invoices', controller.getAllInvoices);
-router.post('/invoices', controller.createInvoice);
-
-module.exports = router;
-
-// controllers/appController.js
+// controllers/klinikController.js
 const { tursoClient } = require('../config/database');
 
-const handleQuery = async (res, sql, args) => {
+exports.getPatients = async (req, res) => {
     try {
-        const result = await tursoClient.execute({ sql, args });
-        res.json({ success: true, data: result.rows });
+        const tenantId = req.headers['x-tenant-id'] || 'default';
+        const page = parseInt(req.query.page) || 1;
+        const limit = 20;
+        const offset = (page - 1) * limit;
+
+        const data = await tursoClient.execute({
+            sql: 'SELECT * FROM patients WHERE tenant_id = ? LIMIT ? OFFSET ?',
+            args: [tenantId, limit, offset]
+        });
+
+        res.json({ success: true, data: data.rows });
     } catch (e) {
-        res.status(500).json({ success: false, error: e.message });
+        res.status(500).json({ error: e.message });
     }
 };
-
-exports.getAllPatients = (req, res) => handleQuery(res, 'SELECT * FROM patients WHERE tenant_id = ?', [req.headers['x-tenant-id']]);
 
 exports.createPatient = async (req, res) => {
-    const { patient_id, name, dob, gender, address, phone, insurance_provider, medical_history_summary } = req.body;
     try {
+        const tenantId = req.headers['x-tenant-id'] || 'default';
+        const { name, phone, birth_date, address, bpjs_number } = req.body;
+
         await tursoClient.execute({
-            sql: `INSERT INTO patients (tenant_id, patient_id, name, dob, gender, address, phone, insurance_provider, medical_history_summary) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            args: [req.headers['x-tenant-id'], patient_id, name, dob, gender, address, phone, insurance_provider, medical_history_summary]
+            sql: `INSERT INTO patients (tenant_id, name, phone, birth_date, address, bpjs_number) 
+                  VALUES (?, ?, ?, ?, ?, ?)`,
+            args: [tenantId, name, phone, birth_date, address, bpjs_number]
         });
-        res.status(201).json({ success: true });
+
+        res.status(201).json({ success: true, message: 'Pasien terdaftar' });
     } catch (e) {
-        res.status(500).json({ success: false, error: e.message });
+        res.status(500).json({ error: e.message });
     }
 };
 
-// Repeat pattern for doctors, appointments, medical_records, invoices...
+exports.getAppointments = async (req, res) => {
+    try {
+        const tenantId = req.headers['x-tenant-id'] || 'default';
+        const data = await tursoClient.execute({
+            sql: 'SELECT * FROM appointments WHERE tenant_id = ? ORDER BY schedule ASC',
+            args: [tenantId]
+        });
+        res.json({ success: true, data: data.rows });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
+exports.createAppointment = async (req, res) => {
+    try {
+        const tenantId = req.headers['x-tenant-id'] || 'default';
+        const { patient_name, doctor_name, schedule, status, notes } = req.body;
+
+        await tursoClient.execute({
+            sql: `INSERT INTO appointments (tenant_id, patient_name, doctor_name, schedule, status, notes) 
+                  VALUES (?, ?, ?, ?, ?, ?)`,
+            args: [tenantId, patient_name, doctor_name, schedule, status || 'pending', notes]
+        });
+
+        res.status(201).json({ success: true, message: 'Janji dibuat' });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
+exports.getDoctors = async (req, res) => {
+    try {
+        const tenantId = req.headers['x-tenant-id'] || 'default';
+        const data = await tursoClient.execute({
+            sql: 'SELECT * FROM doctors WHERE tenant_id = ?',
+            args: [tenantId]
+        });
+        res.json({ success: true, data: data.rows });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
